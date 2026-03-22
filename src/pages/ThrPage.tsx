@@ -1,8 +1,25 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ProgressBar from "../components/layout/ProgressBar";
-import { getCurrentPlayer } from "../lib/storage";
 
 export default function ThrPage() {
-  const player = getCurrentPlayer();
+  const navigate = useNavigate();
+  const [player, setPlayer] = useState<string | null>(null);
+
+  useEffect(() => {
+    const currentPlayer = localStorage.getItem("current_player");
+
+    if (!currentPlayer) {
+      navigate("/");
+      return;
+    }
+
+    setPlayer(currentPlayer);
+  }, [navigate]);
+
+  if (!player) {
+    return null;
+  }
 
   return (
     <main className="page app-shell">
@@ -13,8 +30,7 @@ export default function ThrPage() {
           <p className="eyebrow">Final Page</p>
           <h1 className="title">Yeay, ini link THR-nya.</h1>
           <p className="subtitle">
-            {player ? `${player}, ` : ""}
-            makasih udah nyelesain semua quiz dan games sampai akhir.
+            {player}, makasih udah nyelesain semua quiz dan games sampai akhir.
           </p>
 
           <a

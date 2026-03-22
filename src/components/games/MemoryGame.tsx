@@ -10,26 +10,26 @@ type MemoryGameProps = {
   onComplete: () => void;
 };
 
-function shuffle<T>(array: T[]) {
+function shuffle<T>(array: T[]): T[] {
   const copied = [...array];
+
   for (let i = copied.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1));
     [copied[i], copied[j]] = [copied[j], copied[i]];
   }
+
   return copied;
 }
 
 export default function MemoryGame({ onComplete }: MemoryGameProps) {
-  const cards = useMemo<MemoryCard[]>(
-    () =>
-      shuffle(
-        memoryPhotos.flatMap((item, index) => [
-          { id: index * 2 + 1, item },
-          { id: index * 2 + 2, item },
-        ])
-      ),
-    []
-  );
+  const cards = useMemo<MemoryCard[]>(() => {
+    return shuffle(
+      memoryPhotos.flatMap((item, index) => [
+        { id: index * 2 + 1, item },
+        { id: index * 2 + 2, item },
+      ])
+    );
+  }, []);
 
   const [flipped, setFlipped] = useState<number[]>([]);
   const [matched, setMatched] = useState<number[]>([]);
@@ -44,6 +44,12 @@ export default function MemoryGame({ onComplete }: MemoryGameProps) {
     if (flipped.length === 2) return;
 
     setFlipped((prev) => [...prev, card.id]);
+  };
+
+  const markImageError = (itemId: number) => {
+    setImageErrorIds((prev) =>
+      prev.includes(itemId) ? prev : [...prev, itemId]
+    );
   };
 
   useEffect(() => {
@@ -70,17 +76,14 @@ export default function MemoryGame({ onComplete }: MemoryGameProps) {
     return () => window.clearTimeout(timer);
   }, [flipped, cards]);
 
-  const markImageError = (itemId: number) => {
-    setImageErrorIds((prev) =>
-      prev.includes(itemId) ? prev : [...prev, itemId]
-    );
-  };
-
   return (
     <div className="card">
       <div className="page-heading">
         <p className="eyebrow">Game 2</p>
         <h1 className="title">Memory Match</h1>
+        <p className="subtitle">
+          Cocokkan semua pasangan dulu baru bisa lanjut.
+        </p>
         <p className="subtitle">
           Progress: {matched.length}/{memoryPhotos.length} pasangan
         </p>
@@ -102,19 +105,20 @@ export default function MemoryGame({ onComplete }: MemoryGameProps) {
             >
               {!isOpen ? (
                 <div className="memory-back">?</div>
-                ) : hasImageError ? (
+              ) : hasImageError ? (
                 <div className="memory-empty" />
-                ) : (
+              ) : (
                 <img
-                    src={card.item.image}
-                    alt={`memory-${card.item.id}`}
-                    style={{
-                    objectPosition: card.item.objectPosition ?? "center center",
+                  src={card.item.image}
+                  alt={`memory-${card.item.id}`}
+                  style={{
+                    objectPosition:
+                      card.item.objectPosition ?? "center center",
                     transform: `scale(${card.item.scale ?? 1.7})`,
-                    }}
-                    onError={() => markImageError(card.item.id)}
+                  }}
+                  onError={() => markImageError(card.item.id)}
                 />
-                )}
+              )}
             </button>
           );
         })}
@@ -125,9 +129,7 @@ export default function MemoryGame({ onComplete }: MemoryGameProps) {
           type="button"
           className="btn btn-primary"
           disabled={!isCompleted}
-          onClick={() => {
-            if (isCompleted) onComplete();
-          }}
+          onClick={onComplete}
         >
           {isCompleted ? "Lanjut ke Game 3" : "Selesaikan semua pasangan dulu"}
         </button>

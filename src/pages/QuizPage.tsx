@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import ProgressBar from "../components/layout/ProgressBar";
 import QuizCard from "../components/quiz/QuizCard";
 import { quizData } from "../data/quizData";
-import { getCurrentPlayer } from "../lib/storage";
 
 type Answers = Record<number, number>;
 
@@ -12,15 +11,17 @@ export default function QuizPage() {
   const [answers, setAnswers] = useState<Answers>({});
   const [showResult, setShowResult] = useState(false);
 
-  const player = getCurrentPlayer();
+  const player = localStorage.getItem("current_player");
 
-  const answeredCount = useMemo(() => Object.keys(answers).length, [answers]);
+  const answeredCount = useMemo(() => {
+    return Object.keys(answers).length;
+  }, [answers]);
 
   const allAnswered = answeredCount === quizData.length;
 
-  const allCorrect = quizData.every(
-    (item) => answers[item.id] === item.correctIndex
-  );
+  const allCorrect = useMemo(() => {
+    return quizData.every((item) => answers[item.id] === item.correctIndex);
+  }, [answers]);
 
   const handleCheck = () => {
     if (!allAnswered) {
@@ -59,6 +60,9 @@ export default function QuizPage() {
             <p className="eyebrow">Quiz</p>
             <h1 className="title">Jawab semua dengan benar.</h1>
             <p className="subtitle">
+              {player}, selesaikan semua soal dulu ya.
+            </p>
+            <p className="subtitle">
               Progress: {answeredCount}/{quizData.length}
             </p>
           </div>
@@ -81,7 +85,11 @@ export default function QuizPage() {
           ))}
 
           <div className="actions-row">
-            <button className="btn btn-primary" type="button" onClick={handleCheck}>
+            <button
+              className="btn btn-primary"
+              type="button"
+              onClick={handleCheck}
+            >
               Cek Jawaban
             </button>
           </div>

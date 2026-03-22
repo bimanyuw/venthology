@@ -115,10 +115,10 @@ export default function LandingPage() {
         <ProgressBar step={1} total={7} label="Landing Page" />
 
         <section className="card center-card">
-          <p className="eyebrow">Venthology Ramadhan Edition</p>
+          <p className="eyebrow">Abi bagi-bagi THR</p>
           <h1 className="title">Pilih nama dulu sebelum mulai.</h1>
           <p className="subtitle">
-            Nama yang sudah dipakai tidak bisa digunakan lagi.
+            Klo gaada namanya brati gabisa dapet THR.
           </p>
           <p className="subtitle">
             Sisa nama yang tersedia: <strong>{availableCount}</strong>
