@@ -35,7 +35,7 @@ export default function ThrPage() {
 
           <a
             className="btn btn-primary"
-            href="https://app.gopay.co.id/NF8p/t53ztljk"
+            href="https://app.gopay.co.id/NF8p/khqhy0ws"
             target="_blank"
             rel="noreferrer"
           >
