@@ -1,34 +1,171 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ProgressBar from "../components/layout/ProgressBar";
-import {
-  addLeaderboardEntry,
-  getCurrentPlayer,
-  getLeaderboard,
-} from "../lib/storage";
+import { supabase } from "../lib/supabase";
+
+type PlayerRow = {
+  id: string;
+  name: string;
+  is_claimed: boolean;
+  is_finished: boolean;
+  finish_order: number | null;
+  message: string | null;
+  finished_at: string | null;
+};
 
 export default function MessagePage() {
   const navigate = useNavigate();
-  const player = getCurrentPlayer();
+  const player = localStorage.getItem("current_player");
+
   const [message, setMessage] = useState("");
   const [submittedOrder, setSubmittedOrder] = useState<number | null>(null);
+  const [leaderboard, setLeaderboard] = useState<PlayerRow[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [loadingBoard, setLoadingBoard] = useState(true);
 
-  const leaderboard = useMemo(() => getLeaderboard(), [submittedOrder]);
+  useEffect(() => {
+    if (!player) {
+      navigate("/");
+      return;
+    }
 
-  if (!player) {
-    navigate("/");
-    return null;
-  }
+    fetchLeaderboard();
+    fetchCurrentPlayerStatus();
 
-  const handleSubmit = () => {
+    const channel = supabase
+      .channel("message-page-players")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "players" },
+        () => {
+          fetchLeaderboard();
+          fetchCurrentPlayerStatus();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [player, navigate]);
+
+  const fetchLeaderboard = async () => {
+    setLoadingBoard(true);
+
+    const { data, error } = await supabase
+      .from("players")
+      .select("*")
+      .eq("is_finished", true)
+      .order("finish_order", { ascending: true });
+
+    if (error) {
+      console.error("Gagal mengambil leaderboard:", error);
+      setLeaderboard([]);
+      setLoadingBoard(false);
+      return;
+    }
+
+    setLeaderboard(data ?? []);
+    setLoadingBoard(false);
+  };
+
+  const fetchCurrentPlayerStatus = async () => {
+    if (!player) return;
+
+    const { data, error } = await supabase
+      .from("players")
+      .select("*")
+      .eq("name", player)
+      .single();
+
+    if (error || !data) {
+      return;
+    }
+
+    if (data.message) {
+      setMessage(data.message);
+    }
+
+    if (data.is_finished && data.finish_order) {
+      setSubmittedOrder(data.finish_order);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!player) {
+      navigate("/");
+      return;
+    }
+
     if (!message.trim()) {
       alert("Isi kesan dan pesan dulu.");
       return;
     }
 
-    const order = addLeaderboardEntry(player, message.trim());
-    setSubmittedOrder(order);
+    if (submittedOrder) {
+      return;
+    }
+
+    setSubmitting(true);
+
+    const { data: existingPlayer, error: existingError } = await supabase
+      .from("players")
+      .select("*")
+      .eq("name", player)
+      .single();
+
+    if (existingError || !existingPlayer) {
+      alert("Data pemain tidak ditemukan.");
+      setSubmitting(false);
+      return;
+    }
+
+    if (existingPlayer.is_finished && existingPlayer.finish_order) {
+      setSubmittedOrder(existingPlayer.finish_order);
+      setSubmitting(false);
+      return;
+    }
+
+    const { count, error: countError } = await supabase
+      .from("players")
+      .select("*", { count: "exact", head: true })
+      .eq("is_finished", true);
+
+    if (countError) {
+      console.error("Gagal menghitung urutan finish:", countError);
+      alert("Gagal menyimpan pesan. Coba lagi.");
+      setSubmitting(false);
+      return;
+    }
+
+    const nextOrder = (count ?? 0) + 1;
+
+    const { error: updateError } = await supabase
+      .from("players")
+      .update({
+        is_finished: true,
+        finish_order: nextOrder,
+        message: message.trim(),
+        finished_at: new Date().toISOString(),
+      })
+      .eq("name", player)
+      .eq("is_finished", false);
+
+    if (updateError) {
+      console.error("Gagal update player:", updateError);
+      alert("Gagal menyimpan pesan. Coba lagi.");
+      setSubmitting(false);
+      return;
+    }
+
+    setSubmittedOrder(nextOrder);
+    setSubmitting(false);
+    await fetchLeaderboard();
   };
+
+  if (!player) {
+    return null;
+  }
 
   return (
     <main className="page app-shell">
@@ -50,11 +187,21 @@ export default function MessagePage() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Tulis kesan dan pesan di sini..."
+              disabled={Boolean(submittedOrder)}
             />
 
             <div className="actions-row" style={{ marginTop: 16 }}>
-              <button className="btn btn-primary" type="button" onClick={handleSubmit}>
-                Submit
+              <button
+                className="btn btn-primary"
+                type="button"
+                onClick={handleSubmit}
+                disabled={submitting || Boolean(submittedOrder)}
+              >
+                {submitting
+                  ? "Menyimpan..."
+                  : submittedOrder
+                  ? "Sudah Tersubmit"
+                  : "Submit"}
               </button>
 
               {submittedOrder && (
@@ -69,7 +216,10 @@ export default function MessagePage() {
             </div>
 
             {submittedOrder && (
-              <p className="subtitle" style={{ marginTop: 16, textAlign: "center" }}>
+              <p
+                className="subtitle"
+                style={{ marginTop: 16, textAlign: "center" }}
+              >
                 Kamu selesai urutan ke-<strong>{submittedOrder}</strong>.
               </p>
             )}
@@ -84,19 +234,19 @@ export default function MessagePage() {
             </div>
 
             <div className="leaderboard">
-              {leaderboard.length === 0 ? (
+              {loadingBoard ? (
+                <p className="subtitle">Memuat leaderboard...</p>
+              ) : leaderboard.length === 0 ? (
                 <p className="subtitle">Belum ada yang selesai.</p>
               ) : (
-                leaderboard
-                  .sort((a, b) => a.order - b.order)
-                  .map((entry) => (
-                    <div key={entry.name} className="leaderboard-item">
-                      <span>
-                        #{entry.order} - {entry.name}
-                      </span>
-                      <span>{entry.message}</span>
-                    </div>
-                  ))
+                leaderboard.map((entry) => (
+                  <div key={entry.id} className="leaderboard-item">
+                    <span>
+                      #{entry.finish_order} - {entry.name}
+                    </span>
+                    <span>{entry.message}</span>
+                  </div>
+                ))
               )}
             </div>
           </div>
