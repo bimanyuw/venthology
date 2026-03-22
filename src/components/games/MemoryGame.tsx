@@ -82,9 +82,6 @@ export default function MemoryGame({ onComplete }: MemoryGameProps) {
         <p className="eyebrow">Game 2</p>
         <h1 className="title">Memory Match</h1>
         <p className="subtitle">
-          Cocokkan semua pasangan dulu baru bisa lanjut.
-        </p>
-        <p className="subtitle">
           Progress: {matched.length}/{memoryPhotos.length} pasangan
         </p>
       </div>
@@ -94,7 +91,7 @@ export default function MemoryGame({ onComplete }: MemoryGameProps) {
           const isOpen =
             flipped.includes(card.id) || matched.includes(card.item.id);
 
-          const showEmoji = imageErrorIds.includes(card.item.id);
+          const hasImageError = imageErrorIds.includes(card.item.id);
 
           return (
             <button
@@ -103,19 +100,21 @@ export default function MemoryGame({ onComplete }: MemoryGameProps) {
               className={`memory-tile ${isOpen ? "open" : ""}`}
               onClick={() => handleFlip(card)}
             >
-              {isOpen ? (
-                showEmoji ? (
-                  <div className="memory-fallback">{card.item.emoji}</div>
+              {!isOpen ? (
+                <div className="memory-back">?</div>
+                ) : hasImageError ? (
+                <div className="memory-empty" />
                 ) : (
-                  <img
+                <img
                     src={card.item.image}
                     alt={`memory-${card.item.id}`}
+                    style={{
+                    objectPosition: card.item.objectPosition ?? "center center",
+                    transform: `scale(${card.item.scale ?? 1.7})`,
+                    }}
                     onError={() => markImageError(card.item.id)}
-                  />
-                )
-              ) : (
-                <div className="memory-back">?</div>
-              )}
+                />
+                )}
             </button>
           );
         })}
@@ -127,9 +126,7 @@ export default function MemoryGame({ onComplete }: MemoryGameProps) {
           className="btn btn-primary"
           disabled={!isCompleted}
           onClick={() => {
-            if (isCompleted) {
-              onComplete();
-            }
+            if (isCompleted) onComplete();
           }}
         >
           {isCompleted ? "Lanjut ke Game 3" : "Selesaikan semua pasangan dulu"}

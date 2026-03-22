@@ -52,6 +52,11 @@ select {
   font: inherit;
 }
 
+img {
+  display: block;
+  max-width: 100%;
+}
+
 .page {
   min-height: 100vh;
   width: 100%;
@@ -119,7 +124,10 @@ select {
   padding: 14px 22px;
   border-radius: 999px;
   cursor: pointer;
-  transition: 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease,
+    opacity 0.25s ease;
 }
 
 .btn:hover {
@@ -314,31 +322,26 @@ select {
   object-fit: cover;
   display: block;
   background: rgba(255, 248, 220, 0.04);
+  transition: transform 0.25s ease;
 }
 
 .memory-back,
-.memory-fallback {
+.memory-empty {
   width: 100%;
   height: 100%;
   display: grid;
   place-items: center;
-  font-size: clamp(1.3rem, 2vw, 2rem);
 }
 
 .memory-back {
   color: #e6d48d;
   background: rgba(255, 248, 220, 0.04);
+  font-size: clamp(1.3rem, 2vw, 2rem);
+  font-weight: 700;
 }
 
-.memory-fallback {
-  background: rgba(212, 175, 55, 0.12);
-  color: #fff6cf;
-}
-
-@media (max-width: 768px) {
-  .memory-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
+.memory-empty {
+  background: rgba(255, 248, 220, 0.06);
 }
 
 /* Tic Tac Toe */

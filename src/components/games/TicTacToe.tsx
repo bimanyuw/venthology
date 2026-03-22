@@ -1,20 +1,29 @@
 import { useEffect, useState } from "react";
-import type { Board, Cell } from "../../lib/tictactoe";
-import { checkWinner, getBestMove } from "../../lib/tictactoe";
+import { checkWinner, getBestMove, type Board, type Cell } from "../../lib/tictactoe";
 
 type TicTacToeProps = {
   onComplete: () => void;
 };
 
 export default function TicTacToe({ onComplete }: TicTacToeProps) {
-  const [board, setBoard] = useState<Board>(Array(9).fill(null));
+  const createEmptyBoard = (): Board => Array(9).fill(null);
+
+  const [board, setBoard] = useState<Board>(createEmptyBoard());
   const [status, setStatus] = useState("Kamu jalan duluan.");
   const [locked, setLocked] = useState(false);
+  const [showNext, setShowNext] = useState(false);
 
   const winner = checkWinner(board);
 
+  const resetGame = () => {
+    setBoard(createEmptyBoard());
+    setLocked(false);
+    setShowNext(false);
+    setStatus("Kamu kalah. Coba lagi sampai menang ya.");
+  };
+
   const handleClick = (index: number) => {
-    if (board[index] || locked || winner) return;
+    if (board[index] || locked || winner || showNext) return;
 
     const nextBoard = [...board];
     nextBoard[index] = "X";
@@ -23,23 +32,32 @@ export default function TicTacToe({ onComplete }: TicTacToeProps) {
   };
 
   useEffect(() => {
-    const currentWinner = checkWinner(board);
+    const result = checkWinner(board);
 
-    if (currentWinner === "X") {
-      setStatus("Kamu menang.");
-      const timer = window.setTimeout(() => onComplete(), 900);
+    if (result === "X") {
+      setStatus("Kamu menang. Sekarang boleh lanjut.");
+      setShowNext(true);
+      setLocked(true);
+      return;
+    }
+
+    if (result === "draw") {
+      setStatus("Seri. Belum menang, coba lagi ya.");
+      const timer = window.setTimeout(() => {
+        setBoard(createEmptyBoard());
+        setLocked(false);
+        setShowNext(false);
+        setStatus("Ulang lagi. Kamu jalan duluan.");
+      }, 1000);
+
       return () => window.clearTimeout(timer);
     }
 
-    if (currentWinner === "O") {
-      setStatus("AI menang.");
-      const timer = window.setTimeout(() => onComplete(), 900);
-      return () => window.clearTimeout(timer);
-    }
+    if (result === "O") {
+      const timer = window.setTimeout(() => {
+        resetGame();
+      }, 1000);
 
-    if (currentWinner === "draw") {
-      setStatus("Seri.");
-      const timer = window.setTimeout(() => onComplete(), 900);
       return () => window.clearTimeout(timer);
     }
 
@@ -59,7 +77,7 @@ export default function TicTacToe({ onComplete }: TicTacToeProps) {
     }
 
     setLocked(false);
-  }, [board, onComplete]);
+  }, [board]);
 
   return (
     <div className="card center-card">
@@ -78,6 +96,30 @@ export default function TicTacToe({ onComplete }: TicTacToeProps) {
             {cell}
           </button>
         ))}
+      </div>
+
+      <div className="actions-row">
+        <button
+          type="button"
+          className="btn"
+          onClick={() => {
+            setBoard(createEmptyBoard());
+            setLocked(false);
+            setShowNext(false);
+            setStatus("Game direset. Kamu jalan duluan.");
+          }}
+        >
+          Reset
+        </button>
+
+        <button
+          type="button"
+          className="btn btn-primary"
+          disabled={!showNext}
+          onClick={onComplete}
+        >
+          Next
+        </button>
       </div>
     </div>
   );

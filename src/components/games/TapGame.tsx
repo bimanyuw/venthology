@@ -21,7 +21,7 @@ export default function TapGame({
     <div className="card center-card">
       <p className="eyebrow">Game 1</p>
       <h1 className="title">Tap sampai {target}</h1>
-      <p className="subtitle">Tekan tombol sampai angka penuh.</p>
+      <p className="subtitle">Latihan Fast Hand dulu buat klik tombol claim THR.</p>
 
       <div className="tap-count">{count}</div>
 
