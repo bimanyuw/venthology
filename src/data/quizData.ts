@@ -2,37 +2,73 @@ export type QuizItem = {
   id: number;
   question: string;
   options: string[];
+  correctIndex: number;
 };
 
 export const quizData: QuizItem[] = [
   {
     id: 1,
-    question: "Kalau Ventho lagi nerima THR, ekspresi paling cocok yang mana?",
-    options: [
-      "Sok santai padahal senyum lebar",
-      "Langsung bilang makasih banyak",
-      "Nanya ini beneran?",
-      "Auto flexing tipis-tipis",
-    ],
+    question: "Bulan spesial untuk web ini adalah?",
+    options: ["Syawal", "Ramadhan", "Rajab", "Muharram"],
+    correctIndex: 1,
   },
   {
     id: 2,
-    question: "Kalau disuruh pilih, hadiah kecil yang paling bikin senang itu apa?",
-    options: [
-      "Pesan personal",
-      "Foto kenangan",
-      "Video lucu",
-      "Uang digital pastinya",
-    ],
+    question: "Warna tema utama web ini adalah?",
+    options: ["Pink silver", "Blue white", "Green gold", "Black red"],
+    correctIndex: 2,
   },
   {
     id: 3,
-    question: "Menurutmu, website ini harus dibuka dengan cara apa?",
+    question: "Sebelum ke hadiah akhir, kamu harus...",
+    options: ["Logout", "Main quiz dan game", "Refresh page", "Skip semua"],
+    correctIndex: 1,
+  },
+  {
+    id: 4,
+    question: "Game pertama target tap-nya berapa?",
+    options: ["25", "50", "75", "100"],
+    correctIndex: 3,
+  },
+  {
+    id: 5,
+    question: "Memory game punya berapa pasangan kartu?",
+    options: ["10", "15", "20", "25"],
+    correctIndex: 3,
+  },
+  {
+    id: 6,
+    question: "Siapa yang jalan duluan di Tic Tac Toe?",
+    options: ["AI", "User", "Acak", "Tidak ada"],
+    correctIndex: 1,
+  },
+  {
+    id: 7,
+    question: "Kalau ada jawaban quiz yang salah, bisa lanjut?",
+    options: ["Bisa", "Tidak bisa", "Kadang bisa", "Tergantung device"],
+    correctIndex: 1,
+  },
+  {
+    id: 8,
+    question: "Di akhir nanti ada field untuk...",
+    options: ["Upload foto", "Isi kesan dan pesan", "Edit quiz", "Buat akun"],
+    correctIndex: 1,
+  },
+  {
+    id: 9,
+    question: "Nama yang sudah dipakai pemain lain akan...",
     options: [
-      "Pelan-pelan biar vibes-nya dapet",
-      "Langsung scroll sampai bawah",
-      "Nonton video dulu",
-      "Cari link THR duluan",
+      "Tetap bisa dipakai",
+      "Jadi prioritas",
+      "Tidak bisa dipakai lagi",
+      "Auto terhapus",
     ],
+    correctIndex: 2,
+  },
+  {
+    id: 10,
+    question: "Setelah semua selesai, kamu akan dapat...",
+    options: ["Leaderboard", "Urutan selesai", "Link THR", "Semuanya benar"],
+    correctIndex: 3,
   },
 ];

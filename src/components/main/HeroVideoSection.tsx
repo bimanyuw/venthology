@@ -3,15 +3,7 @@ import { motion } from "framer-motion";
 export default function HeroVideoSection() {
   return (
     <section className="hero-video-section">
-      <video
-        className="hero-video"
-        src="/videos/ventho-main.mp4"
-        autoPlay
-        muted
-        loop
-        playsInline
-      />
-
+      {/* Video dihapus dari sini */}
       <div className="hero-overlay">
         <motion.div
           className="hero-copy"
