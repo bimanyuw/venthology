@@ -30,7 +30,7 @@ export default function ThrPage() {
           <p className="eyebrow">Final Page</p>
           <h1 className="title">Yeay, ini link THR-nya.</h1>
           <p className="subtitle">
-            {player}, makasih udah nyelesain semua quiz dan games sampai akhir.
+            {player}, thanku udah nyelesain semua quiz dan games sampai akhir.
           </p>
 
           <a
